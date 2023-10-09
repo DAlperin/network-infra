@@ -1,0 +1,40 @@
+define OURASN = 400743;
+define OURIPv6 = {{ hostvars[inventory_hostname]['host_v6'] }};
+define OURPASSWORD = "{{ bgp_password }}";
+define OURIPv4 = {{ ansible_host }};
+ 
+log syslog all;
+ 
+router id OURIPv4;
+
+filter ourasn {
+	if net ~ [ 2620:AD:6000::/48 ] then accept;
+	else reject;
+}
+ 
+protocol device {
+        scan time 5;
+}
+ 
+protocol direct {
+        interface "lo";
+        ipv6;
+}
+ 
+protocol static {
+        ipv6;
+        route 2620:AD:6000::/48 unreachable;
+}
+ 
+protocol bgp vultr {
+        description "Vultr";
+        local OURIPv6 as OURASN;
+        neighbor 2001:19f0:ffff::1 as 64515;
+        multihop 2;
+        password OURPASSWORD;
+ 
+        ipv6 {
+                import all;
+                export filter ourasn;
+	};
+}

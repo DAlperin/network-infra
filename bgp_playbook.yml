@@ -1,0 +1,18 @@
+---
+- hosts: bgp
+  become: yes
+  tasks:
+    - name: Install Bird
+      apt:
+        name: bird2
+        state: latest
+
+    - name: install config
+      template:
+        src: files/bird.conf.j2
+        dest: /etc/bird/bird.conf
+
+    - name: restart bird
+      ansible.builtin.systemd:
+        state: restarted
+        name: bird
